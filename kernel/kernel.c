@@ -122,11 +122,10 @@ void kernel_main(void) {
   //multiboot_show();
   keyboard_init();
 
-  uintptr_t p = page_frame_alloc(16);
+  uintptr_t p = palloc(16);
   print_hex(&std, p);
-  page_contiguous_free(p, 8);
+  *((uint32_t *)p) = 0xBADA55; 
   get_ch();
-  page_contiguous_free(p + 0x8000, 8);
 
   
   while (1) {

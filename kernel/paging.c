@@ -251,6 +251,41 @@ uintptr_t page_frame_alloc(uint32_t n) {
 
 }
 
+/**
+ * Dynamic page allocator for kernel.
+ * Returns the starting address of n allocated pages in kernel memory (>0xC0000000).
+ * @param n number of pages to allocate.
+ * @return The virtual address of the new pages.
+ */
+uintptr_t palloc(uint32_t n) {
+  uintptr_t ret;
+  uintptr_t virtual_addr;
+  uintptr_t physical_addr;
+  uint32_t page_frame_size;
+  uintptr_t next_page_frame;
+  uint32_t i = 0;
+
+  ret = virtual_addr = addr_block_remove(n);
+  physical_addr = page_frame_alloc(n);
+  do {
+    page_map(virtual_addr, physical_addr);
+    next_page_frame = *((uint32_t *)virtual_addr);
+    page_frame_size = *((uint32_t *)virtual_addr + 1);
+    virtual_addr += 0x1000;
+    physical_addr += 0x1000;
+    i++;
+    while (i < page_frame_size) {
+      page_map(virtual_addr, physical_addr);
+      virtual_addr += 0x1000;
+      physical_addr += 0x1000;
+      i++;
+    }
+    physical_addr = next_page_frame;
+  } while (next_page_frame);
+
+  return ret;
+}
+
 void page_contiguous_free(uintptr_t start, uint32_t size) {
   uintptr_t current;
   uintptr_t next;
