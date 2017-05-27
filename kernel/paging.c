@@ -200,11 +200,13 @@ void init_paging(void) {
   //initialize physical address space
   uint32_t multiboot_memory = (multiboot_info[2] << 10) + 0x00100000;
   uint32_t physical_size = (multiboot_memory - kernel_physical_end) >> 12;
-  page_frame_alloc_physical = (uint32_t *) kernel_physical_end;
   page_frame_alloc_virtual = (uint32_t *) addr_block_remove(1);
-  page_map((uintptr_t)page_frame_alloc_virtual, (uintptr_t)page_frame_alloc_physical);
-  page_frame_alloc_virtual[0] = 0;
-  page_frame_alloc_virtual[1] = physical_size;
+  page_frame_free(kernel_physical_end, physical_size);
+  /* page_frame_alloc_physical = (uint32_t *) kernel_physical_end; */
+  /* page_frame_alloc_virtual = (uint32_t *) addr_block_remove(1); */
+  /* page_map((uintptr_t)page_frame_alloc_virtual, (uintptr_t)page_frame_alloc_physical); */
+  /* page_frame_alloc_virtual[0] = 0; */
+  /* page_frame_alloc_virtual[1] = physical_size; */
 }
 
 
@@ -249,6 +251,66 @@ uintptr_t page_frame_alloc(uint32_t n) {
   }
   return ret;
 
+}
+
+/**
+ * Mark physical page frame as free
+ * @param start starting address of page frame.
+ * @param size size of page frame.
+ */
+void page_frame_free(uintptr_t start, uint32_t size) {
+  uintptr_t next;
+
+  //if there are no page frames
+  if (page_frame_alloc_physical == 0) {
+    page_frame_alloc_physical = (uint32_t *)start;
+    page_map((uintptr_t)page_frame_alloc_virtual, (uintptr_t)page_frame_alloc_physical);
+    page_frame_alloc_virtual[0] = 0;
+    page_frame_alloc_virtual[1] = size;
+    return;
+  }
+
+  page_map((uintptr_t)page_frame_alloc_virtual, (uintptr_t)page_frame_alloc_physical);
+  next = page_frame_alloc_virtual[0];
+  if (start + (size << 12) <= (uintptr_t)page_frame_alloc_physical) {
+    page_map((uintptr_t)page_frame_alloc_virtual, start);
+    page_frame_alloc_virtual[0] = (uintptr_t)page_frame_alloc_physical;
+    page_frame_alloc_virtual[1] = size;
+    if (start + (size << 12) == (uintptr_t)page_frame_alloc_physical) {
+      page_frame_alloc_virtual[0] = next;
+      page_map((uintptr_t)page_frame_alloc_virtual, (uintptr_t)page_frame_alloc_physical);
+      size = page_frame_alloc_virtual[1];
+      page_map((uintptr_t)page_frame_alloc_virtual, start);
+      page_frame_alloc_virtual[1] += size;
+    }
+    page_frame_alloc_physical = (uint32_t *)start;
+  } else {
+    uintptr_t prev_physical = (uintptr_t)page_frame_alloc_physical;
+    while (next < start && next != 0) {
+      page_map((uintptr_t)page_frame_alloc_virtual, next);
+      prev_physical = next;
+      next = page_frame_alloc_virtual[0];
+    }
+
+    if (prev_physical + (page_frame_alloc_virtual[1] << 12) == start) {
+      page_frame_alloc_virtual[1] += size;
+    } else {
+      page_frame_alloc_virtual[0] = start;
+      page_map((uintptr_t)page_frame_alloc_virtual, start);
+      page_frame_alloc_virtual[0] = next;
+      prev_physical = start;
+    }
+
+    if (prev_physical + (page_frame_alloc_virtual[1] << 12) == next) {
+      page_map((uintptr_t)page_frame_alloc_virtual, next);
+      next = page_frame_alloc_virtual[0];
+      size = page_frame_alloc_virtual[1];
+      page_map((uintptr_t)page_frame_alloc_virtual, prev_physical);
+      page_frame_alloc_virtual[0] = next;
+      page_frame_alloc_virtual[1] += size;
+    }
+  }
+    
 }
 
 /**

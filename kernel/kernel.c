@@ -122,10 +122,17 @@ void kernel_main(void) {
   //multiboot_show();
   keyboard_init();
 
-  uintptr_t p = palloc(16);
+  /* uintptr_t p = palloc(16); */
+  /* print_hex(&std, p); */
+  /* *((uint32_t *)p) = 0xBADA55;  */
+  /* get_ch(); */
+
+  uintptr_t p = page_frame_alloc(16);
   print_hex(&std, p);
-  *((uint32_t *)p) = 0xBADA55; 
   get_ch();
+  page_frame_free(p, 8);
+  get_ch();
+  page_frame_free(p + 0x8000, 8);
 
   
   while (1) {
