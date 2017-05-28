@@ -25,10 +25,12 @@
 
 void init_paging(void);
 void page_map(uintptr_t virtual_addr, uintptr_t physical_addr);
+void page_unmap(uintptr_t virtual_addr);
 void insert_addr_block(uintptr_t start, uint32_t size);
 uintptr_t addr_block_remove(uint32_t size);
 void print_addr_blocks(void);
 uintptr_t page_frame_alloc(uint32_t n);
 void page_frame_free(uintptr_t start, uint32_t size);
 uintptr_t palloc(uint32_t n);
+void pfree(uintptr_t addr);
 #endif

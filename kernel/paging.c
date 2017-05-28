@@ -326,13 +326,25 @@ uintptr_t palloc(uint32_t n) {
   uint32_t page_frame_size;
   uintptr_t next_page_frame;
   uint32_t i = 0;
+  uint32_t meta_index = 0;
+  uint32_t *metadata;
 
-  ret = virtual_addr = addr_block_remove(n);
-  physical_addr = page_frame_alloc(n);
+  virtual_addr = addr_block_remove(n + 1);
+  physical_addr = page_frame_alloc(n + 1);
+  metadata = (uint32_t *)virtual_addr;
+  ret = virtual_addr + 0x1000;
   do {
     page_map(virtual_addr, physical_addr);
     next_page_frame = *((uint32_t *)virtual_addr);
     page_frame_size = *((uint32_t *)virtual_addr + 1);
+    if (virtual_addr == (uintptr_t)metadata) {
+      metadata[meta_index] = n;
+      meta_index += 2;
+    }
+    metadata[meta_index] = physical_addr;
+    meta_index++;
+    metadata[meta_index] = page_frame_size;
+    meta_index++;
     virtual_addr += 0x1000;
     physical_addr += 0x1000;
     i++;
@@ -344,8 +356,37 @@ uintptr_t palloc(uint32_t n) {
     }
     physical_addr = next_page_frame;
   } while (next_page_frame);
-
+  metadata[meta_index] = 0;
+  meta_index++;
+  metadata[meta_index] = 0;
   return ret;
+}
+
+/**
+ * Free pages allocated by palloc.
+ * @param addr address returned by palloc.
+ */
+void pfree(uintptr_t addr) {
+  uint32_t *metadata = (uint32_t *)(addr - 0x1000);
+  uint32_t size = metadata[0] + 1;
+  uint32_t metadata_copy[1024];
+  uint32_t i;
+
+  for (i = 0; i < 1024; i++) {
+    metadata_copy[i] = metadata[i];
+  }
+
+  i = 0;
+  for (addr = (uint32_t)metadata; i < size; i++) {
+    page_unmap(addr);
+    addr += 0x1000;
+  }
+
+  i = 2;
+  while (metadata_copy[i]) {
+    page_frame_free(metadata_copy[i], metadata_copy[i+1]);
+    i += 2;
+  }
 }
 
 /**
