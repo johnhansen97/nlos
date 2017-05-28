@@ -348,57 +348,6 @@ uintptr_t palloc(uint32_t n) {
   return ret;
 }
 
-void page_contiguous_free(uintptr_t start, uint32_t size) {
-  uintptr_t current;
-  uintptr_t next;
-
-  if (page_frame_alloc_physical == 0 || start < (uintptr_t)page_frame_alloc_physical) {
-    page_map((uintptr_t) page_frame_alloc_virtual, start);
-    page_frame_alloc_virtual[0] = (uintptr_t)page_frame_alloc_physical;
-    page_frame_alloc_virtual[1] = size;
-    page_frame_alloc_physical = (uint32_t *)start;
-  } else {
-    current = (uintptr_t)page_frame_alloc_physical;
-    page_map((uintptr_t)page_frame_alloc_virtual, current);
-    next = page_frame_alloc_virtual[0];
-    while (start < current) {
-      current = page_frame_alloc_virtual[0];
-      page_map((uintptr_t)page_frame_alloc_virtual, current);
-      next = page_frame_alloc_virtual[0];
-    }
-
-    if (start == current + (page_frame_alloc_virtual[1] << 12)) {
-      page_frame_alloc_virtual[1] += size;
-      if (current + (page_frame_alloc_virtual[1] << 12) == next) {
-	page_map((uintptr_t)page_frame_alloc_virtual, next);
-	next = page_frame_alloc_virtual[0];
-	uint32_t next_size = page_frame_alloc_virtual[1];
-	page_map((uintptr_t)page_frame_alloc_virtual, current);
-	page_frame_alloc_virtual[0] = next;
-	page_frame_alloc_virtual[1] += next_size;
-      }
-    } else {
-      page_frame_alloc_virtual[0] = start;
-      page_map((uintptr_t)page_frame_alloc_virtual, start);
-      page_frame_alloc_virtual[0] = next;
-      if (start + (size << 12) == next) {
-	page_map((uintptr_t)page_frame_alloc_virtual, next);
-	next = page_frame_alloc_virtual[0];
-	uint32_t next_size = page_frame_alloc_virtual[1];
-	page_map((uintptr_t)page_frame_alloc_virtual, start);
-	page_frame_alloc_virtual[0] = next;
-	page_frame_alloc_virtual[1] += next_size;
-      }
-    }
-  }
-
-  /* while (size > 0) { */
-  /*   page_unmap(start); */
-  /*   start += 0x1000; */
-  /*   size--; */
-  /* } */
-}
-
 /**
  * Map a virtual page to a physical page
  */

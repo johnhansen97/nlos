@@ -31,5 +31,4 @@ void print_addr_blocks(void);
 uintptr_t page_frame_alloc(uint32_t n);
 void page_frame_free(uintptr_t start, uint32_t size);
 uintptr_t palloc(uint32_t n);
-void page_contiguous_free(uintptr_t start, uint32_t size);
 #endif
