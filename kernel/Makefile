@@ -4,7 +4,7 @@
 #
 
 CC = i686-elf-gcc
-CFLAGS = -ffreestanding -O2 -Wall -Wextra -Werror \
+CFLAGS = -ffreestanding -O2 -Wall -Wextra -Werror\
 -fstack-protector -fstack-protector-strong -fstack-protector-all \
 -Wnull-dereference \
 -fno-delete-null-pointer-checks
@@ -19,7 +19,9 @@ idt.o \
 queue.o \
 keyboard.o \
 isr.o \
-paging.o
+paging.o \
+liballoc.o \
+liballoc_hooks.o
 
 .SUFFIXES: .kernel .o .c .asm .d
 

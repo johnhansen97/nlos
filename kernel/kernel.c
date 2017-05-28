@@ -5,6 +5,7 @@
 #include "keyboard.h"
 #include "inline_asm.h"
 #include "paging.h"
+#include "liballoc.h"
 
 #if UINT32_MAX == UINTPTR_MAX
 #define STACK_CHK_GUARD 0xe2dee396
@@ -122,16 +123,10 @@ void kernel_main(void) {
   //multiboot_show();
   keyboard_init();
 
-  uintptr_t p = palloc(16);
-  print_hex(&std, p);
-  *((uint32_t *)p) = 0xBADA55;
+  void *p = malloc(50);
+  print_hex(&std, (uintptr_t)p);
   get_ch();
-  uintptr_t q = palloc(16);
-  print_hex(&std, q);
-  get_ch();
-  pfree(q);
-  get_ch();
-  pfree(p);
+  free(p);
   
 
   
