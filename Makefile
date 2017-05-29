@@ -7,9 +7,9 @@
 
 all: myos.iso
 
-myos.iso: isodir/boot/grub/grub.cfg kernel
-	cp kernel/myos.kernel isodir/boot/myos.kernel
-	grub-mkrescue -o myos.iso isodir
+myos.iso: sysroot/boot/grub/grub.cfg kernel
+	cp kernel/myos.kernel sysroot/boot/myos.kernel
+	grub-mkrescue -o myos.iso sysroot
 
 .PHONY: clean kernel
 
@@ -18,5 +18,5 @@ kernel:
 
 clean:
 	make -C kernel clean
-	rm -f isodir/boot/myos.kernel
+	rm -f sysroot/boot/myos.kernel
 	rm -f myos.iso
