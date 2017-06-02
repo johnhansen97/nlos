@@ -8,6 +8,7 @@ extern terminal_t std;
 extern uint32_t *multiboot_info;
 extern uintptr_t kernel_virtual_end;
 extern uintptr_t kernel_physical_end;
+extern uintptr_t upper_half;
 
 typedef struct {
   uint32_t entries[1024];
@@ -31,8 +32,10 @@ extern page_dir_t boot_page_directory;
 static page_dir_t *page_dir;
 
 __attribute__ ((aligned (0x1000)))
-static page_table_t page_tables[1024];
+static page_table_t *page_tables = (void *)0xFFC00000;
 
+__attribute__ ((aligned (0x1000)))
+static page_table_t first_page_table;
 static uint32_t *page_frame_alloc_virtual;
 static uint32_t *page_frame_alloc_physical;
 
@@ -201,12 +204,11 @@ void init_paging(void) {
   uint32_t multiboot_memory = (multiboot_info[2] << 10) + 0x00100000;
   uint32_t physical_size = (multiboot_memory - kernel_physical_end) >> 12;
   page_frame_alloc_virtual = (uint32_t *) addr_block_remove(1);
+
+
+  page_table_map((uintptr_t)&first_page_table - upper_half,
+		 (uintptr_t)page_frame_alloc_virtual >> 22);
   page_frame_free(kernel_physical_end, physical_size);
-  /* page_frame_alloc_physical = (uint32_t *) kernel_physical_end; */
-  /* page_frame_alloc_virtual = (uint32_t *) addr_block_remove(1); */
-  /* page_map((uintptr_t)page_frame_alloc_virtual, (uintptr_t)page_frame_alloc_physical); */
-  /* page_frame_alloc_virtual[0] = 0; */
-  /* page_frame_alloc_virtual[1] = physical_size; */
 }
 
 
@@ -390,6 +392,23 @@ void pfree(uintptr_t addr) {
 }
 
 /**
+ * Map physical address as page table index.
+ * @param addr the physical address of the new page table.
+ * @param index the index of the new page in the pd.
+ */
+void page_table_map(uintptr_t addr, uint32_t index) {
+  page_dir->entries[index] = (addr & PAGE_DIR_ENTRY_ADDR)
+    | PAGE_DIR_ENTRY_USER
+    | PAGE_DIR_ENTRY_RW
+    | PAGE_DIR_ENTRY_PRES;
+
+  page_map(0xFFC00000 + (index << 12), addr);
+
+  //IMPORTANT! Invalidate tlb.
+  write_cr3(read_cr3());
+}
+
+/**
  * Map a virtual page to a physical page
  */
 void page_map(uintptr_t virtual_addr, uintptr_t physical_addr) {
@@ -403,13 +422,9 @@ void page_map(uintptr_t virtual_addr, uintptr_t physical_addr) {
 
   // if page table entry is not present
   if (!(page_dir->entries[page_dir_index] & PAGE_DIR_ENTRY_PRES)) {
-    page_dir->entries[page_dir_index] = 
-      (((uintptr_t)&page_tables[page_dir_index] - 0xC0000000)
-      & PAGE_DIR_ENTRY_ADDR)
-      | PAGE_DIR_ENTRY_USER
-      | PAGE_DIR_ENTRY_RW
-      | PAGE_DIR_ENTRY_PRES;
+    page_table_map(page_frame_alloc(1), page_dir_index);
   }
+
   page_tables[page_dir_index].entries[page_table_index] = entry;
   invlpg(virtual_addr);
 }

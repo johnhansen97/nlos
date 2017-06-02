@@ -24,6 +24,7 @@
 #define PAGE_TABLE_ENTRY_PRES   0x00000001
 
 void init_paging(void);
+void page_table_map(uintptr_t addr, uint32_t index);
 void page_map(uintptr_t virtual_addr, uintptr_t physical_addr);
 void page_unmap(uintptr_t virtual_addr);
 void insert_addr_block(uintptr_t start, uint32_t size);

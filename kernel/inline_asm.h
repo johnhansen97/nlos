@@ -23,4 +23,17 @@ static inline void invlpg(uintptr_t m) {
 		:"b"(m)
 		: "memory");
 }
+
+static inline uint32_t read_cr3(void) {
+  uint32_t ret;
+  asm volatile ("mov %%cr3, %0"
+		: "=r"(ret));
+  return ret;
+}
+
+static inline void write_cr3(uint32_t val) {
+  asm volatile ("mov %0, %%cr3"
+		:
+		: "r"(val));
+}
 #endif
