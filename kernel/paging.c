@@ -11,14 +11,6 @@ extern uintptr_t kernel_physical_end;
 extern uintptr_t upper_half;
 
 typedef struct {
-  uint32_t entries[1024];
-} page_table_t;
-
-typedef struct {
-  uint32_t entries[1024];
-} page_dir_t;
-
-typedef struct {
   int32_t next;
   int32_t prev;
   uintptr_t start;

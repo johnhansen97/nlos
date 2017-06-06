@@ -21,7 +21,8 @@ keyboard.o \
 isr.o \
 paging.o \
 liballoc.o \
-liballoc_hooks.o
+liballoc_hooks.o \
+process.o
 
 .SUFFIXES: .kernel .o .c .asm .d
 

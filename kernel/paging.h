@@ -23,6 +23,14 @@
 #define PAGE_TABLE_ENTRY_RW     0x00000002
 #define PAGE_TABLE_ENTRY_PRES   0x00000001
 
+typedef struct {
+  uint32_t entries[1024];
+} page_table_t;
+
+typedef struct {
+  uint32_t entries[1024];
+} page_dir_t;
+
 void init_paging(void);
 void page_table_map(uintptr_t addr, uint32_t index);
 void page_map(uintptr_t virtual_addr, uintptr_t physical_addr);

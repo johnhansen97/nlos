@@ -6,6 +6,7 @@
 #include "inline_asm.h"
 #include "paging.h"
 #include "liballoc.h"
+#include "process.h"
 
 #if UINT32_MAX == UINTPTR_MAX
 #define STACK_CHK_GUARD 0xe2dee396
@@ -123,7 +124,8 @@ void kernel_main(void) {
   //multiboot_show();
   keyboard_init();
 
-  void *p = malloc(50);
+  process_t *p = (process_t *)malloc(sizeof(process_t));
+  init_process(p, "hi");
   print_hex(&std, (uintptr_t)p);
   get_ch();
   free(p);
