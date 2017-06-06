@@ -39,22 +39,16 @@ KERNEL_PAGE_NUMBER equ (KERNEL_VIRTUAL_BASE >> 22)
 section .data
 
 align 0x1000
-global boot_page_tt
-boot_page_tt:
-	times (1023) dd 0
-	dd ((boot_page_tt - 0xc0000000) + 0x03)
-
-align 0x1000
 global boot_page_directory
 boot_page_directory:
 	;; identity map first 4mb as rw
 	dd 0x00000083
 	times (KERNEL_PAGE_NUMBER - 1) dd 0 ;empty pages before kernel
-	;; map 0xC0000000 to first 4mb
+	;; map 0xC0000000 to first 8mb
 	dd 0x00000083
+	dd 0x00400083
 	;; dd 0x00400083
 	times (1024 - KERNEL_PAGE_NUMBER - 2) dd 0 ;empty pages after kernel
-	dd ((boot_page_tt - 0xc0000000) + 0x03)
 	
 idt_desc:
 	dw 0xFE

@@ -32,10 +32,9 @@ extern page_dir_t boot_page_directory;
 static page_dir_t *page_dir;
 
 __attribute__ ((aligned (0x1000)))
-static page_table_t *page_tables = (void *)0xFFC00000;
+static page_table_t kernel_page_tables[256];
 
 __attribute__ ((aligned (0x1000)))
-static page_table_t first_page_table;
 static uint32_t *page_frame_alloc_virtual;
 static uint32_t *page_frame_alloc_physical;
 
@@ -205,9 +204,12 @@ void init_paging(void) {
   uint32_t physical_size = (multiboot_memory - kernel_physical_end) >> 12;
   page_frame_alloc_virtual = (uint32_t *) addr_block_remove(1);
 
+  int i;
+  for (i = 2; i < 256; i++) {
+    page_table_map((uintptr_t)(&(kernel_page_tables[i])) - upper_half,
+		   i + 768);
+  }
 
-  page_table_map((uintptr_t)&first_page_table - upper_half,
-		 (uintptr_t)page_frame_alloc_virtual >> 22);
   page_frame_free(kernel_physical_end, physical_size);
 }
 
@@ -402,8 +404,6 @@ void page_table_map(uintptr_t addr, uint32_t index) {
     | PAGE_DIR_ENTRY_RW
     | PAGE_DIR_ENTRY_PRES;
 
-  page_map(0xFFC00000 + (index << 12), addr);
-
   //IMPORTANT! Invalidate tlb.
   write_cr3(read_cr3());
 }
@@ -420,12 +420,7 @@ void page_map(uintptr_t virtual_addr, uintptr_t physical_addr) {
     | PAGE_TABLE_ENTRY_RW
     | PAGE_TABLE_ENTRY_PRES;
 
-  // if page table entry is not present
-  if (!(page_dir->entries[page_dir_index] & PAGE_DIR_ENTRY_PRES)) {
-    page_table_map(page_frame_alloc(1), page_dir_index);
-  }
-
-  page_tables[page_dir_index].entries[page_table_index] = entry;
+  kernel_page_tables[page_dir_index - 768].entries[page_table_index] = entry;
   invlpg(virtual_addr);
 }
 
@@ -437,6 +432,6 @@ void page_unmap(uintptr_t virtual_addr) {
   uint32_t page_dir_index = (virtual_addr & 0xFFC00000) >> 22;
   uint32_t page_table_index = (virtual_addr & 0x003FF000) >> 12;
 
-  page_tables[page_dir_index].entries[page_table_index] = 0;
+  kernel_page_tables[page_dir_index - 768].entries[page_table_index] = 0;
   invlpg(virtual_addr);
 }
