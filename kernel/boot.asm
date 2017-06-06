@@ -45,9 +45,8 @@ boot_page_directory:
 	dd 0x00000083
 	times (KERNEL_PAGE_NUMBER - 1) dd 0 ;empty pages before kernel
 	;; map 0xC0000000 to first 8mb
-	dd 0x00000083
-	dd 0x00400083
-	;; dd 0x00400083
+	dd 0x00000183
+	dd 0x00400183
 	times (1024 - KERNEL_PAGE_NUMBER - 2) dd 0 ;empty pages after kernel
 	
 idt_desc:
@@ -89,7 +88,7 @@ _loader:
 
 	;; enable 4mb pages
 	mov ecx, cr4
-	or ecx, 0x00000010
+	or ecx, 0x00000090
 	mov cr4, ecx
 
 	;; enable paging

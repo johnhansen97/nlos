@@ -392,6 +392,7 @@ void pfree(uintptr_t addr) {
  */
 void page_table_map(uintptr_t addr, uint32_t index) {
   page_dir->entries[index] = (addr & PAGE_DIR_ENTRY_ADDR)
+    | PAGE_DIR_ENTRY_GLOBAL
     | PAGE_DIR_ENTRY_USER
     | PAGE_DIR_ENTRY_RW
     | PAGE_DIR_ENTRY_PRES;
@@ -408,6 +409,7 @@ void page_map(uintptr_t virtual_addr, uintptr_t physical_addr) {
   uint32_t page_table_index = (virtual_addr & 0x003FF000) >> 12;
   uint32_t entry = (physical_addr
 		    & PAGE_TABLE_ENTRY_ADDR)
+    | PAGE_TABLE_ENTRY_GLOBAL
     | PAGE_TABLE_ENTRY_USER
     | PAGE_TABLE_ENTRY_RW
     | PAGE_TABLE_ENTRY_PRES;
