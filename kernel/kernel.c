@@ -45,12 +45,10 @@ void kernel_main(void) {
   terminal_init(&std);
 
   idt_init(&idt);
-  load_idt();
-
   init_paging();
-
-  //multiboot_show();
   keyboard_init();
+
+  load_idt();
 
   process_t *p = (process_t *)malloc(sizeof(process_t));
   init_process(p, "hi");

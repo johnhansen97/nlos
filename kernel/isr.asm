@@ -2,8 +2,8 @@ extern isr0, scan_queue, enqueue, kernel_panic_pf
 
 section .text
 
-global isr08_wrapper
-isr08_wrapper:
+global isr20_wrapper
+isr20_wrapper:
 	cld
 	push eax
 	call isr0
@@ -14,8 +14,8 @@ isr08_wrapper:
 	pop eax
 	iretd
 
-global isr09_wrapper
-isr09_wrapper:
+global isr21_wrapper
+isr21_wrapper:
 	push eax
 	xor eax, eax
 

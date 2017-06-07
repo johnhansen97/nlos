@@ -50,7 +50,7 @@ boot_page_directory:
 	times (1024 - KERNEL_PAGE_NUMBER - 2) dd 0 ;empty pages after kernel
 	
 idt_desc:
-	dw 0xFE
+	dw 0x07ff
 	dd idt
 
 global_descriptor_table:
