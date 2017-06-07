@@ -55,6 +55,7 @@ void kernel_main(void) {
   process_t *p = (process_t *)malloc(sizeof(process_t));
   init_process(p, "hi");
   print_hex(&std, (uintptr_t)p);
+  process_map_page(p, 0, page_frame_alloc(1));
   get_ch();
   free(p);
   
