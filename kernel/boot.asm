@@ -130,7 +130,6 @@ start_higher:
 	mov eax, kernel_physical_end
 	mov dword [eax], _kernel_physical_end
 	
-	push upper_half
 	call kernel_main
 	
 halt:

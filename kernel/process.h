@@ -3,7 +3,13 @@
 
 #include <stdint.h>
 
-typedef struct {} thread_t;
+#define THREAD_STACK_SIZE 16
+
+typedef struct thread {
+  uint32_t tid;
+  uintptr_t stk_ptr;
+  struct thread *next_thread;
+} thread_t;
 
 typedef struct {
   uint32_t pid;

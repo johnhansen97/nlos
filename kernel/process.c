@@ -6,6 +6,7 @@
 #include "inline_asm.h"
 
 extern page_dir_t boot_page_directory;
+extern uintptr_t upper_half;
 
 static uint32_t next_pid;
 
@@ -70,11 +71,19 @@ void init_process(process_t *p, const char *name) {
   p->page_dir_physical = page_frame_alloc(1);
   page_map((uintptr_t)p->page_dir_virtual, p->page_dir_physical);
 
-  int i;
+  unsigned int i;
   for (i = 768; i < 1024; i++) {
     p->page_dir_virtual->entries[i] = boot_page_directory.entries[i];
   }
 
-  p->thread_list = (thread_t *)0;
+  p->thread_list = malloc(sizeof(thread_t));
+
+  p->thread_list->tid = 0;
+  p->thread_list->next_thread = 0;
+  p->thread_list->stk_ptr = upper_half;
+
+  for (i = upper_half - 0x1000; i >= upper_half - THREAD_STACK_SIZE * 0x1000; i -= 0x1000) {
+    process_map_page(p, i, page_frame_alloc(1));
+  }
   p->status = 0;
 }

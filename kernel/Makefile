@@ -4,12 +4,13 @@
 #
 
 CC = i686-elf-gcc
-CFLAGS = -ffreestanding -O2 -Wall -Wextra -Werror\
+CFLAGS = -ffreestanding -Wall -Wextra -Werror \
 -fstack-protector -fstack-protector-strong -fstack-protector-all \
 -Wnull-dereference \
--fno-delete-null-pointer-checks
+-fno-delete-null-pointer-checks \
+-ggdb
 ASM = nasm
-ASMFLAGS = -f elf
+ASMFLAGS = -f elf -ggdb
 LDFLAGS = -nostdlib -Wall -Wextra
 
 OBJECTS = boot.o \
