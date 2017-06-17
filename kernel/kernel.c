@@ -1,4 +1,7 @@
+#define _ALLOC_SKIP_DEFINE
+
 #include <stdint.h>
+#include <string.h>
 #include "kernel.h"
 #include "terminal.h"
 #include "idt.h"
@@ -50,6 +53,7 @@ void kernel_main(void) {
 
   load_idt();
 
+  print_str(&std, memcpy(malloc(13), "Hello world!", 13));
   process_t *p = (process_t *)malloc(sizeof(process_t));
   init_process(p, "hi");
   print_hex(&std, (uintptr_t)p);

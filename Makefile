@@ -14,9 +14,14 @@ myos.iso: sysroot/boot/grub/grub.cfg kernel
 .PHONY: clean kernel
 
 kernel:
+	make -C libc install_headers
+	make -C libc install_lib
 	make -C kernel
 
 clean:
+	make -C libc clean
 	make -C kernel clean
+	rm -f sysroot/usr/include/*.h
+	rm -f sysroot/usr/lib/*.a
 	rm -f sysroot/boot/myos.kernel
 	rm -f myos.iso

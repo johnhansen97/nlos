@@ -8,10 +8,11 @@ CFLAGS = -ffreestanding -Wall -Wextra -Werror \
 -fstack-protector -fstack-protector-strong -fstack-protector-all \
 -Wnull-dereference \
 -fno-delete-null-pointer-checks \
--ggdb
+-ggdb \
+-isystem ../sysroot/usr/include
 ASM = nasm
 ASMFLAGS = -f elf -ggdb
-LDFLAGS = -nostdlib -Wall -Wextra
+LDFLAGS = -nostdlib -Wall -Wextra -L../sysroot/usr/lib -lc
 
 OBJECTS = boot.o \
 kernel.o \
