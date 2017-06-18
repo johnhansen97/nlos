@@ -1,5 +1,3 @@
-#define _ALLOC_SKIP_DEFINE
-
 #include <stdint.h>
 #include <string.h>
 #include "kernel.h"
@@ -53,13 +51,13 @@ void kernel_main(void) {
 
   load_idt();
 
-  print_str(&std, memcpy(malloc(13), "Hello world!", 13));
   process_t *p = (process_t *)malloc(sizeof(process_t));
   init_process(p, "hi");
-  print_hex(&std, (uintptr_t)p);
-  process_map_page(p, 0, page_frame_alloc(1));
-  get_ch();
-  free(p);
+
+  asm volatile( "mov %0, %%esp;\npopa;\niret"
+		:
+		:"r" (p->thread_list->stk_ptr)
+		);
   
 
   

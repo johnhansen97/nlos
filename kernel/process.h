@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-#define THREAD_STACK_SIZE 16
+#define PROCESS_TEXT_OFFSET 0x00100000
+#define THREAD_STACK_SIZE   16
 
 typedef struct thread {
   uint32_t tid;

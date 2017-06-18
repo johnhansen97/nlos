@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include "paging.h"
 #include "process.h"
 #include "liballoc.h"
@@ -7,6 +8,8 @@
 
 extern page_dir_t boot_page_directory;
 extern uintptr_t upper_half;
+
+extern void usr_process(void);
 
 static uint32_t next_pid;
 
@@ -33,6 +36,39 @@ static void process_new_pt(process_t *p, uint32_t index) {
   if (read_cr3() == p->page_dir_physical) {
     write_cr3(read_cr3());
   }
+}
+
+/**
+ * Switch to process address space, load text, and init default
+ * thread stack.
+ * @param p process
+ */
+static void process_init_mem(process_t *p) {
+  unsigned int i;
+  uint32_t *stack = (uint32_t *)upper_half - 11;
+  //Switch to process address space
+  write_cr3(p->page_dir_physical);
+
+  //Load process text
+  process_map_page(p, PROCESS_TEXT_OFFSET, page_frame_alloc(1));
+  memcpy((void *)PROCESS_TEXT_OFFSET, &usr_process, 4096);
+
+  for (i = upper_half - 0x1000; i >= upper_half - THREAD_STACK_SIZE * 0x1000; i -= 0x1000) {
+    process_map_page(p, i, page_frame_alloc(1));
+  }
+
+  stack[0] = 0;
+  stack[1] = 0;
+  stack[2] = upper_half;
+  stack[3] = upper_half - 12;
+  stack[4] = 0;
+  stack[5] = 0;
+  stack[6] = 0;
+  stack[7] = 0;
+  stack[8] = PROCESS_TEXT_OFFSET;
+  stack[9] = 0x10;
+  stack[10] = 0x200282;
+  p->thread_list->stk_ptr = (uintptr_t)stack;
 }
 
 /**
@@ -65,25 +101,27 @@ void process_map_page(process_t *p, uintptr_t virtual_addr, uintptr_t physical_a
  * @param *name the name of the process
  */
 void init_process(process_t *p, const char *name) {
+  //Set up process_t struct
   p->pid = next_pid++;
   p->name[0] = name - name; //TODO: use strncpy
   p->page_dir_virtual = (page_dir_t *)addr_block_remove(1);
   p->page_dir_physical = page_frame_alloc(1);
   page_map((uintptr_t)p->page_dir_virtual, p->page_dir_physical);
+  p->status = 0;
 
+  //Map kernel PTs to process PD
   unsigned int i;
   for (i = 768; i < 1024; i++) {
     p->page_dir_virtual->entries[i] = boot_page_directory.entries[i];
   }
 
+  //Init default thread
   p->thread_list = malloc(sizeof(thread_t));
 
   p->thread_list->tid = 0;
   p->thread_list->next_thread = 0;
   p->thread_list->stk_ptr = upper_half;
 
-  for (i = upper_half - 0x1000; i >= upper_half - THREAD_STACK_SIZE * 0x1000; i -= 0x1000) {
-    process_map_page(p, i, page_frame_alloc(1));
-  }
-  p->status = 0;
+  //Init process memory
+  process_init_mem(p);
 }
