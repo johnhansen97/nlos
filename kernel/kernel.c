@@ -54,7 +54,7 @@ void kernel_main(void) {
   process_t *p = (process_t *)malloc(sizeof(process_t));
   init_process(p, "hi");
 
-  asm volatile( "mov %0, %%esp;\npopa;\niret"
+  asm volatile( "mov %0, %%esp;\nmov $0x2b, %%eax;\nmov %%eax, %%ds;\npopa;\niret"
 		:
 		:"r" (p->thread_list->stk_ptr)
 		);

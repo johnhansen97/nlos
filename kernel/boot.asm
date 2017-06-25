@@ -53,28 +53,45 @@ idt_desc:
 	dw 0x07ff
 	dd idt
 
+align 0x10
 global_descriptor_table:
 	;; first two entries are null
 	times 16 db 0
 
-	;; code segment
+	;; kernel code segment
 	dw 0xFFFF		;lower limit
 	dw 0x0000		;lower base
 	db 0x00			;mid base
-	db 0x9a			;access byte
+	db 0x9A			;access byte
 	db 0xCF			;flags and upper limit
-	dw 0x0000		;upper base
+	db 0x00			;upper base
 
-	;; data segment
+	;; kernel data segment
 	dw 0xFFFF		;lower limit
 	dw 0x0000		;lower base
 	db 0x00			;mid base
 	db 0x92			;access byte
 	db 0xCF			;flags and upper limit
-	dw 0x0000		;upper base
+	db 0x00			;upper base
+
+	;; user code segment
+	dw 0xFFFF		;lower limit
+	dw 0x0000		;lower base
+	db 0x00			;mid base
+	db 0xFA			;access byte
+	db 0xCF			;flags and upper limit
+	db 0x00			;upper base
+
+	;; user data segment
+	dw 0xFFFF		;lower limit
+	dw 0x0000		;lower base
+	db 0x00			;mid base
+	db 0xF2			;access byte
+	db 0xCF			;flags and upper limit
+	db 0x00			;upper base
 
 gdt_desc:
-	dw 0x001F
+	dw 0x002F
 	dd global_descriptor_table
 	
 section .text

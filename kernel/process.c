@@ -30,6 +30,7 @@ static void process_new_pt(process_t *p, uint32_t index) {
 
   p->page_tables[index] = (page_table_t *)virtual;
   p->page_dir_virtual->entries[index] = (physical & PAGE_DIR_ENTRY_ADDR)
+    | PAGE_DIR_ENTRY_USER
     | PAGE_DIR_ENTRY_RW
     | PAGE_DIR_ENTRY_PRES;
 
@@ -45,7 +46,7 @@ static void process_new_pt(process_t *p, uint32_t index) {
  */
 static void process_init_mem(process_t *p) {
   unsigned int i;
-  uint32_t *stack = (uint32_t *)upper_half - 11;
+  uint32_t *stack = (uint32_t *)upper_half - 13;
   //Switch to process address space
   write_cr3(p->page_dir_physical);
 
@@ -60,15 +61,17 @@ static void process_init_mem(process_t *p) {
   stack[0] = 0;
   stack[1] = 0;
   stack[2] = upper_half;
-  stack[3] = upper_half - 12;
+  stack[3] = upper_half - 20;
   stack[4] = 0;
   stack[5] = 0;
   stack[6] = 0;
   stack[7] = 0;
   stack[8] = PROCESS_TEXT_OFFSET;
-  stack[9] = 0x10;
-  stack[10] = 0x200282;
-  p->thread_list->stk_ptr = (uintptr_t)stack;
+  stack[9] = 0x23;
+  stack[10] = 0x200002;
+  stack[11] = (uintptr_t)upper_half;
+  stack[12] = 0x2b;
+  p->thread_list->stk_ptr = (uintptr_t)upper_half - 52;
 }
 
 /**
@@ -82,6 +85,7 @@ void process_map_page(process_t *p, uintptr_t virtual_addr, uintptr_t physical_a
   uint32_t page_table_index = (virtual_addr & 0x003FF000) >> 12;
   uint32_t entry = (physical_addr
 		    & PAGE_TABLE_ENTRY_ADDR)
+    | PAGE_TABLE_ENTRY_USER
     | PAGE_TABLE_ENTRY_RW
     | PAGE_TABLE_ENTRY_PRES;
 
