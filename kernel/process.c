@@ -68,7 +68,7 @@ static void process_init_mem(process_t *p) {
   stack[7] = 0;
   stack[8] = PROCESS_TEXT_OFFSET;
   stack[9] = 0x23;
-  stack[10] = 0x200002;
+  stack[10] = 0x200202;
   stack[11] = (uintptr_t)upper_half;
   stack[12] = 0x2b;
   p->thread_list->stk_ptr = (uintptr_t)upper_half - 52;

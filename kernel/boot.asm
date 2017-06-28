@@ -32,6 +32,11 @@ stack_bottom:
 resb 0x00010000		;64kb
 stack_top:
 
+align 16
+tss_pl0_bottom:
+resb 0x00010000		;64kb
+tss_pl0_top:	
+
 KERNEL_VIRTUAL_BASE equ 0xC0000000
 KERNEL_PAGE_NUMBER equ (KERNEL_VIRTUAL_BASE >> 22)
 
@@ -55,9 +60,13 @@ idt_desc:
 
 align 0x10
 global_descriptor_table:
-	;; first two entries are null
-	times 16 db 0
+	;; first entry is null
+	times 8 db 0
 
+	;; second entry is tss, initialized at runtime
+tss_descriptor:	
+	times 8 db 0
+	
 	;; kernel code segment
 	dw 0xFFFF		;lower limit
 	dw 0x0000		;lower base
@@ -93,12 +102,21 @@ global_descriptor_table:
 gdt_desc:
 	dw 0x002F
 	dd global_descriptor_table
+
+align 0x1000
+task_state_segment:
+	dd 0			;prev. task link
+	dd tss_pl0_top		;esp0
+	dd 0x18			;ss0
+	times 22 dd 0		;zero remaining fields
+
 	
+
 section .text
 
 loader equ _loader - KERNEL_VIRTUAL_BASE
 
-_loader:	
+_loader:
 	;; load page directory
 	mov ecx, (boot_page_directory - KERNEL_VIRTUAL_BASE)
 	mov cr3, ecx
@@ -113,7 +131,20 @@ _loader:
 	or ecx, 0x80000000
 	mov cr0, ecx
 
+	;; install tss descriptor
+	mov ecx, tss_descriptor
+	mov edx, task_state_segment
+	mov word [ecx], 0x67	;seg limit
+	mov [ecx+2], dx		;base lower
+	shr edx, 16
+	mov [ecx+4], dl		;base mid
+	mov byte [ecx+5], 0x89	;type
+	mov byte [ecx+6], 0x00	;upper limit
+	mov byte [ecx+7], dh	;upper base
+
 	lgdt [gdt_desc]
+	mov cx, 0x08
+	ltr cx
 	
 	;; long jump to the higher half
 	lea ecx, [start_higher]
