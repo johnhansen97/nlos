@@ -8,8 +8,7 @@
 
 extern page_dir_t boot_page_directory;
 extern uintptr_t upper_half;
-
-extern void usr_process(void);
+extern uint32_t *multiboot_info;
 
 static uint32_t next_pid;
 
@@ -47,12 +46,20 @@ static void process_new_pt(process_t *p, uint32_t index) {
 static void process_init_mem(process_t *p) {
   unsigned int i;
   uint32_t *stack = (uint32_t *)upper_half - 13;
+  
+  uint32_t module_start = *(uint32_t *)(multiboot_info[6] + upper_half);
+  uint32_t module_end = ((uint32_t *)(multiboot_info[6] + upper_half))[1];
+  uint32_t virtual_addr = PROCESS_TEXT_OFFSET;
+
   //Switch to process address space
   write_cr3(p->page_dir_physical);
 
   //Load process text
-  process_map_page(p, PROCESS_TEXT_OFFSET, page_frame_alloc(1));
-  memcpy((void *)PROCESS_TEXT_OFFSET, &usr_process, 4096);
+  while (module_start <= module_end) {
+    process_map_page(p, virtual_addr, module_start);
+    module_start += 0x1000;
+    virtual_addr+= 0x1000;
+  }
 
   for (i = upper_half - 0x1000; i >= upper_half - THREAD_STACK_SIZE * 0x1000; i -= 0x1000) {
     process_map_page(p, i, page_frame_alloc(1));
