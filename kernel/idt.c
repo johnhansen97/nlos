@@ -4,6 +4,7 @@
 void isr20_wrapper(void);
 void isr21_wrapper(void);
 void isr0E(void);
+void isr80(void);
 idt_t idt;
 
 /**
@@ -53,9 +54,10 @@ void idt_init(idt_t *t) {
 
   remap_pic();
 
-  idt_desc_new(&idt.entries[0x20], (uint32_t) &isr20_wrapper, 0x10);
-  idt_desc_new(&idt.entries[0x21], (uint32_t) &isr21_wrapper, 0x10);
-  idt_desc_new(&idt.entries[0x0E], (uint32_t) &isr0E, 0x10);
+  idt_desc_new(&idt.entries[0x20], (uint32_t) &isr20_wrapper, 0x10, 0x8e);
+  idt_desc_new(&idt.entries[0x21], (uint32_t) &isr21_wrapper, 0x10, 0x8e);
+  idt_desc_new(&idt.entries[0x0E], (uint32_t) &isr0E, 0x10, 0x8e);
+  idt_desc_new(&idt.entries[0x80], (uint32_t) &isr80, 0x10, 0xee);
   return;
 }
 
@@ -67,10 +69,10 @@ void idt_desc_init(idt_desc_t *t) {
   t->offset_2 = 0;
 }
   
-void idt_desc_new(idt_desc_t *t, uint32_t offset, uint16_t selector) {
+void idt_desc_new(idt_desc_t *t, uint32_t offset, uint16_t selector, uint8_t type_attr) {
   t->selector = selector;
   t->offset_1 = offset & 0xffff;
   t->offset_2 = offset >> 16;
   t->zero = 0;
-  t->type_attr = 0x8e;
+  t->type_attr = type_attr;
 }

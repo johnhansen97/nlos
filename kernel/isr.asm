@@ -1,4 +1,4 @@
-extern isr0, scan_queue, enqueue, kernel_panic_pf
+extern isr0, scan_queue, enqueue, kernel_panic_pf, syscall
 
 section .text
 
@@ -38,3 +38,18 @@ isr0E:
 	mov ecx, cr2
 	push ecx
 	call kernel_panic_pf
+
+global isr80
+isr80:
+	push edx
+	push ecx
+	push ebx
+	push eax
+
+	call syscall
+
+	pop eax
+	pop ebx
+	pop ecx
+	pop edx
+	iretd

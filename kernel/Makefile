@@ -24,7 +24,8 @@ isr.o \
 paging.o \
 liballoc.o \
 liballoc_hooks.o \
-process.o
+process.o \
+syscalls.o
 
 .SUFFIXES: .kernel .o .c .asm .d
 

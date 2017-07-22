@@ -34,5 +34,5 @@ typedef struct idt {
 
 void idt_init(idt_t *t);
 void idt_desc_init(idt_desc_t *t);
-void idt_desc_new(idt_desc_t *t, uint32_t offset, uint16_t selector);
+void idt_desc_new(idt_desc_t *t, uint32_t offset, uint16_t selector, uint8_t type_attr);
 #endif
