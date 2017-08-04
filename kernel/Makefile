@@ -1,5 +1,5 @@
 #
-# MyOS Kernel makefile
+# NLOS Kernel makefile
 # John Hansen
 #
 
@@ -29,11 +29,11 @@ syscalls.o
 
 .SUFFIXES: .kernel .o .c .asm .d
 
-all: myos.kernel
+all: nlos.kernel
 
 -include $(OBJECTS:.o=.d)
 
-myos.kernel: $(OBJECTS) linker.ld
+nlos.kernel: $(OBJECTS) linker.ld
 	$(CC) -T linker.ld -o $@ $^ $(LDFLAGS)
 	grub-file --is-x86-multiboot $@
 
@@ -46,6 +46,6 @@ myos.kernel: $(OBJECTS) linker.ld
 .PHONY: clean
 
 clean:
-	rm -f myos.kernel
+	rm -f nlos.kernel
 	rm -f *.o
 	rm -f *.d

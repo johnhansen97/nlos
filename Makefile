@@ -1,15 +1,15 @@
 #
-# MyOS makefile
+# NLOS makefile
 # John Hansen
 #
 
 .SUFFIXES: .iso
 
-all: myos.iso
+all: nlos.iso
 
-myos.iso: sysroot/boot/grub/grub.cfg kernel usr_process
-	cp kernel/myos.kernel sysroot/boot/myos.kernel
-	grub-mkrescue -o myos.iso sysroot
+nlos.iso: sysroot/boot/grub/grub.cfg kernel usr_process
+	cp kernel/nlos.kernel sysroot/boot/nlos.kernel
+	grub-mkrescue -o nlos.iso sysroot
 
 .PHONY: clean kernel usr_process
 
@@ -27,5 +27,5 @@ clean:
 	make -C user_process clean
 	rm -f sysroot/usr/include/*.h
 	rm -f sysroot/usr/lib/*.a
-	rm -f sysroot/boot/myos.kernel
-	rm -f myos.iso
+	rm -f sysroot/boot/nlos.kernel
+	rm -f nlos.iso

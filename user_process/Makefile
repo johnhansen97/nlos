@@ -1,9 +1,9 @@
 #
-# MyOS User Process Makefile
+# NLOS User Process Makefile
 # John Hansen
 #
 # This program is for testing the functionality related to running
-# user processes in MyOS.
+# user processes in NLOS.
 #
 
 .PHONY: install clean
