@@ -5,3 +5,4 @@
 *.d
 *~
 *.a
+sysroot/usr/include/*
