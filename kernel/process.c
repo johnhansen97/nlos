@@ -45,7 +45,7 @@ static void process_new_pt(process_t *p, uint32_t index) {
  */
 static void process_init_mem(process_t *p) {
   unsigned int i;
-  uint32_t *stack = (uint32_t *)upper_half - 13;
+  uint32_t *stack = (uint32_t *)upper_half - 14;
   
   uint32_t module_start = *(uint32_t *)(multiboot_info[6] + upper_half);
   uint32_t module_end = ((uint32_t *)(multiboot_info[6] + upper_half))[1];
@@ -67,8 +67,8 @@ static void process_init_mem(process_t *p) {
 
   stack[0] = 0;
   stack[1] = 0;
-  stack[2] = upper_half;
-  stack[3] = upper_half - 20;
+  stack[2] = upper_half - 24;
+  stack[3] = upper_half - 24;
   stack[4] = 0;
   stack[5] = 0;
   stack[6] = 0;
@@ -76,9 +76,10 @@ static void process_init_mem(process_t *p) {
   stack[8] = PROCESS_TEXT_OFFSET;
   stack[9] = 0x23;
   stack[10] = 0x200202;
-  stack[11] = (uintptr_t)upper_half;
+  stack[11] = (uintptr_t)upper_half - 4;
   stack[12] = 0x2b;
-  p->thread_list->stk_ptr = (uintptr_t)upper_half - 52;
+  stack[13] = 0;
+  p->thread_list->stk_ptr = (uintptr_t)upper_half - 56;
 }
 
 /**
