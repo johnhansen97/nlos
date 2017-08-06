@@ -55,6 +55,11 @@ void kernel_main(void) {
   init_process(p, "hi");
 
   print_str(&std, "NLOS has booted.\n");
+  print_str(&std, "Compiled on ");
+  print_str(&std, __DATE__);
+  print_str(&std, " at ");
+  print_str(&std, __TIME__);
+  print_str(&std, ".\n");
   print_str(&std, "Running process:\n");
   asm volatile( "mov %0, %%esp;\nmov $0x2b, %%eax;\nmov %%eax, %%ds;\npopa;\niret"
 		:
