@@ -7,14 +7,14 @@
 
 all: nlos.iso
 
-nlos.iso: sysroot/boot/grub/grub.cfg kernel usr_process
+nlos.iso: sysroot/boot/grub/grub.cfg kernel user_programs
 	cp kernel/nlos.kernel sysroot/boot/nlos.kernel
 	grub-mkrescue -o nlos.iso sysroot
 
-.PHONY: clean kernel usr_process
+.PHONY: clean kernel user_programs
 
-usr_process:
-	make -C user_process install
+user_programs:
+	make -C user_programs install
 
 kernel:
 	make -C libc install_headers
@@ -24,7 +24,7 @@ kernel:
 clean:
 	make -C libc clean
 	make -C kernel clean
-	make -C user_process clean
+	make -C user_programs clean
 	rm -f sysroot/usr/include/*.h
 	rm -f sysroot/usr/lib/*.a
 	rm -f sysroot/boot/nlos.kernel
