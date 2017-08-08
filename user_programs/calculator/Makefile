@@ -6,7 +6,7 @@
 CC = i686-elf-gcc
 CFLAGS = -ggdb -Wall -Wextra -Werror  -ffreestanding
 LD = i686-elf-ld
-LDFLAGS = -Ttext 0x00100000 -e main --oformat binary
+LDFLAGS =
 
 OBJECTS = calc.o
 
@@ -17,8 +17,8 @@ BINARY = calc.bin
 
 all: $(BINARY)
 
-$(BINARY): $(OBJECTS)
-	$(LD) -o $@ $(LDFLAGS) $^
+$(BINARY): $(OBJECTS) linker.ld
+	$(LD) -o $@ -T linker.ld $(LDFLAGS) $^
 
 -include $(OBJECTS:.o=.d)
 
