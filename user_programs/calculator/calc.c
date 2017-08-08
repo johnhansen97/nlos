@@ -8,8 +8,9 @@ char outputString[20];
 int strIndex = 0;
 
 void main(void) {
+  print_str("\n");
   print_str("NLOS Calculator\n");
-  print_str("Usage: <integer> <operator> <integer>\n");
+  print_str("Usage: <integer> <operator> <integer> or q to quit.\n");
   print_str("Spaces are required and both operands must be positive.\n");
   print_str("Accepted operators: + - * /\n");
 
@@ -54,6 +55,11 @@ void parseInput(void) {
   char operator = 0;
   int i = 0;
   int result;
+
+  if ((inputString[0] == 'q' || inputString[0] == 'Q') &&
+      inputString[1] == 0) {
+    sys_exit();
+  }
 
   //parse first operand
   while (inputString[i] != ' ') {
