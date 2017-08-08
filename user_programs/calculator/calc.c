@@ -21,6 +21,11 @@ void main(void) {
       inputString[strIndex] = get_ch();
 
       if (inputString[strIndex] == '\b') {
+	//Fix backspace underflow bug
+	if (strIndex == 0) {
+	  continue;
+	}
+
 	strIndex--;
 	inputString[strIndex + 1] = 0;
 	inputString[strIndex] = ' ';
