@@ -42,4 +42,5 @@ uintptr_t page_frame_alloc(uint32_t n);
 void page_frame_free(uintptr_t start, uint32_t size);
 uintptr_t palloc(uint32_t n);
 void pfree(uintptr_t addr);
+void zeroPage(uintptr_t page);
 #endif

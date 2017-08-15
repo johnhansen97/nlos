@@ -10,9 +10,9 @@ LDFLAGS =
 
 OBJECTS = calc.o
 
-BINARY = calc.bin
+BINARY = calc
 
-.SUFFIXES: .o .c .bin .d
+.SUFFIXES: .o .c .d
 .PHONY: install clean
 
 all: $(BINARY)
@@ -31,6 +31,6 @@ install: $(BINARY)
 
 clean:
 	rm -f ../../sysroot/bin/$(BINARY)
-	rm -f *.bin
+	rm -f $(BINARY)
 	rm -f *.o
 	rm -f *.d

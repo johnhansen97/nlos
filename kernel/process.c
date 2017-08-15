@@ -5,6 +5,7 @@
 #include "liballoc.h"
 #include "kernel.h"
 #include "inline_asm.h"
+#include "elf.h"
 
 extern page_dir_t boot_page_directory;
 extern uintptr_t upper_half;
@@ -39,28 +40,18 @@ static void process_new_pt(process_t *p, uint32_t index) {
 }
 
 /**
- * Switch to process address space, load text, and init default
- * thread stack.
+ * Initialize a process stack
  * @param p process
+ * @param entry entry point of the process
  */
-static void process_init_mem(process_t *p) {
+void process_init_stack(process_t *p, uintptr_t entry) {
   unsigned int i;
   uint32_t *stack = (uint32_t *)upper_half - 14;
-  
-  uint32_t module_start = *(uint32_t *)(multiboot_info[6] + upper_half);
-  uint32_t module_end = ((uint32_t *)(multiboot_info[6] + upper_half))[1];
-  uint32_t virtual_addr = PROCESS_TEXT_OFFSET;
 
   //Switch to process address space
   write_cr3(p->page_dir_physical);
 
-  //Load process text
-  while (module_start <= module_end) {
-    process_map_page(p, virtual_addr, module_start);
-    module_start += 0x1000;
-    virtual_addr+= 0x1000;
-  }
-
+  //allocate stack memory
   for (i = upper_half - 0x1000; i >= upper_half - THREAD_STACK_SIZE * 0x1000; i -= 0x1000) {
     process_map_page(p, i, page_frame_alloc(1));
   }
@@ -73,7 +64,7 @@ static void process_init_mem(process_t *p) {
   stack[5] = 0;
   stack[6] = 0;
   stack[7] = 0;
-  stack[8] = PROCESS_TEXT_OFFSET;
+  stack[8] = entry;
   stack[9] = 0x23;
   stack[10] = 0x200202;
   stack[11] = (uintptr_t)upper_half - 4;
@@ -133,7 +124,4 @@ void init_process(process_t *p, const char *name) {
   p->thread_list->tid = 0;
   p->thread_list->next_thread = 0;
   p->thread_list->stk_ptr = upper_half;
-
-  //Init process memory
-  process_init_mem(p);
 }

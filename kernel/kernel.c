@@ -8,6 +8,7 @@
 #include "paging.h"
 #include "liballoc.h"
 #include "process.h"
+#include "elf.h"
 
 #if UINT32_MAX == UINTPTR_MAX
 #define STACK_CHK_GUARD 0xe2dee396
@@ -53,6 +54,9 @@ void kernel_main(void) {
 
   process_t *p = (process_t *)malloc(sizeof(process_t));
   init_process(p, "hi");
+  loadElf(*(uint32_t *)(multiboot_info[6] + upper_half),
+	  ((uint32_t *)(multiboot_info[6] + upper_half))[1],
+	  p);
 
   print_str(&std, "NLOS has booted.\n");
   print_str(&std, "Compiled on ");

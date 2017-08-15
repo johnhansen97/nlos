@@ -429,3 +429,17 @@ void page_unmap(uintptr_t virtual_addr) {
   kernel_page_tables[page_dir_index - 768].entries[page_table_index] = 0;
   invlpg(virtual_addr);
 }
+
+/**
+ * Fill a given page with zeros
+ * @param page virtual page address
+ */
+void zeroPage(uintptr_t page) {
+  page = page & 0xFFFFF000;
+  uint32_t *array = (uint32_t *)page;
+  int i;
+
+  for (i = 0; i < 1024; i++) {
+    array[i] = 0;
+  }
+}

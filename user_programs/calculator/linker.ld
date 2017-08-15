@@ -1,23 +1,22 @@
 ENTRY(main)
-OUTPUT_FORMAT(binary)
 
 SECTIONS
 {
 	. = 0x00100000;
 
-	.text :
+	.text : ALIGN(4k)
 	{
 		*(.text)
 		*(.rodata*)
 	}
 
-	.data :
+	.data : ALIGN(4k)
 	{
 		*(.data)
 
 	}
 
-	.bss :
+	.bss : ALIGN(4k)
 	{
 		*(COMMON)
 		*(.bss)
