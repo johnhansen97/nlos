@@ -3,4 +3,5 @@
 
 __attribute__((noreturn))
 void kernel_panic_message(const char *c);
+void kernel_debug_str(const char *s);
 #endif

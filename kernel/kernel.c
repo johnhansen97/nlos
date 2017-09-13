@@ -52,11 +52,7 @@ void kernel_main(void) {
 
   load_idt();
 
-  process_t *p = (process_t *)malloc(sizeof(process_t));
-  init_process(p, "hi");
-  loadElf(*(uint32_t *)(multiboot_info[6] + upper_half),
-	  ((uint32_t *)(multiboot_info[6] + upper_half))[1],
-	  p);
+  kernel_debug_str("Hello World!\n");
 
   print_str(&std, "NLOS has booted.\n");
   print_str(&std, "Compiled on ");
@@ -64,6 +60,13 @@ void kernel_main(void) {
   print_str(&std, " at ");
   print_str(&std, __TIME__);
   print_str(&std, ".\n");
+
+  process_t *p = (process_t *)malloc(sizeof(process_t));
+  init_process(p, "hi");
+  loadElf(*(uint32_t *)(multiboot_info[6] + upper_half),
+	  ((uint32_t *)(multiboot_info[6] + upper_half))[1],
+	  p);
+
   print_str(&std, "Running process:\n");
   asm volatile( "mov %0, %%esp;\nmov $0x2b, %%eax;\nmov %%eax, %%ds;\npopa;\niret"
 		:
@@ -112,5 +115,16 @@ void kernel_panic_pf(uint32_t addr) {
   while (1) {
     asm ("cli");
     hlt();
+  }
+}
+
+/**
+ * Print string to bochs terminal using port 0xE9 hack
+ */
+void kernel_debug_str(const char *s) {
+  int i = 0;
+  while(s[i]) {
+    outb(0xE9, s[i]);
+    i++;
   }
 }
