@@ -16,6 +16,8 @@
 #define STACK_CHK_GUARD 0x595e9fbd94fda766
 #endif
 
+extern process_t *current_process;
+
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
 
 void __attribute__((noreturn)) __stack_chk_fail(void) {
@@ -52,8 +54,6 @@ void kernel_main(void) {
 
   load_idt();
 
-  kernel_debug_str("Hello World!\n");
-
   print_str(&std, "NLOS has booted.\n");
   print_str(&std, "Compiled on ");
   print_str(&std, __DATE__);
@@ -67,6 +67,7 @@ void kernel_main(void) {
 	  ((uint32_t *)(multiboot_info[6] + upper_half))[1],
 	  p);
 
+  current_process = p;
   print_str(&std, "Running process:\n");
   asm volatile( "mov %0, %%esp;\nmov $0x2b, %%eax;\nmov %%eax, %%ds;\npopa;\niret"
 		:

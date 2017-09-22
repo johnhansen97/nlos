@@ -13,6 +13,8 @@ extern uint32_t *multiboot_info;
 
 static uint32_t next_pid;
 
+process_t *current_process;
+
 /**
  * Add a new page table to the process page tree.
  * @param p the process whose address space will be modified.
@@ -124,4 +126,30 @@ void init_process(process_t *p, const char *name) {
   p->thread_list->tid = 0;
   p->thread_list->next_thread = 0;
   p->thread_list->stk_ptr = upper_half;
+}
+
+/**
+ * Free all memory used by a given process and set it's status to killed.
+ * @param *p pointer to the process
+ */
+void kill_process(process_t *p) {
+  int page, table;
+
+  for (table = 0; table < 768; table++) {
+    if (p->page_tables[table] == NULL) {
+      continue;
+    }
+    for (page = 0; page < 1024; page++) {
+      if (p->page_tables[table]->entries[page] == 0) {
+	continue;
+      }
+      page_frame_free(p->page_tables[table]->entries[page] & 0xFFFFF000, 1);
+    }
+    page_frame_free((uintptr_t) p->page_tables[table] & 0xFFFFF000, 1);
+  }
+
+  page_frame_free(p->page_dir_physical, 1);
+  insert_addr_block((uintptr_t) p->page_dir_virtual, 1);
+
+  p->status = 1; //TODO: create enum for process status
 }

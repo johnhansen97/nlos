@@ -3,8 +3,10 @@
 #include "terminal.h"
 #include "keyboard.h"
 #include "inline_asm.h"
+#include "process.h"
 
 extern terminal_t std;
+extern process_t *current_process;
 
 void (*syscalls[3]) (uint32_t eax,
 		     uint32_t ebx,
@@ -31,6 +33,7 @@ void sys_exit(uint32_t eax __attribute__ ((unused)),
 	      uint32_t ebx __attribute__ ((unused)),
 	      uint32_t ecx __attribute__ ((unused)),
 	      uint32_t edx __attribute__ ((unused))) {
+  kill_process(current_process);
   print_str(&std, "\nProcess terminated.");
   while (1) {
     hlt();
