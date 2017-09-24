@@ -116,6 +116,12 @@ void init_process(process_t *p, const char *name) {
 
   //Map kernel PTs to process PD
   unsigned int i;
+
+  for (i = 0; i < 768; i++) {
+    p->page_tables[i] = 0;
+    p->page_dir_virtual->entries[i] = 0;
+  }
+
   for (i = 768; i < 1024; i++) {
     p->page_dir_virtual->entries[i] = boot_page_directory.entries[i];
   }
